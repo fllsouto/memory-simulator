@@ -29,15 +29,15 @@ class MemorySimulator
 
   def parse_command command
     case command
-    when MemorySimulator::COMMANDS[:load]
+    when COMMANDS[:load]
       puts "Comando inserido : #{command}"
-    when MemorySimulator::COMMANDS[:space]
+    when COMMANDS[:space]
       puts "Comando inserido : #{command}"
-    when MemorySimulator::COMMANDS[:replace]
+    when COMMANDS[:replace]
       puts "Comando inserido : #{command}"
-    when MemorySimulator::COMMANDS[:execute]
+    when COMMANDS[:execute]
       puts "Comando inserido : #{command}"
-    when MemorySimulator::COMMANDS[:exit]
+    when COMMANDS[:exit]
       puts "Comando inserido : #{command}"
       puts "Vou sair"
       @exit_flag = true
