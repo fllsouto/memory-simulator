@@ -5,9 +5,12 @@ require_relative 'memory_simulator'
 module RubyBasicApp
   
   def self.main
-    simulator = MemorySimulator.new
-    while true
-      puts simulator.read_command
+    simulator = MemorySimulator.instance
+
+    while !simulator.exit_flag
+      comamnd = simulator.read_command
+      simulator.parse_command(comamnd)
+      simulator.run_command(comamnd)
     end
   end
 
