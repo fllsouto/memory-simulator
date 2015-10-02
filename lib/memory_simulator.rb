@@ -22,6 +22,10 @@ class MemorySimulator
     return @@instance
   end
 
+  def self.new_method
+    return @@instance
+  end
+
   def read_command
     print "[ep2] : "
     command = gets.chomp
