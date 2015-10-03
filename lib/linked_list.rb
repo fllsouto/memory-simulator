@@ -2,42 +2,67 @@ require 'pry'
 
 class LinkedList
 
-  attr_accessor :val, :nnext
+  attr_accessor :pid, :init, :size, :type, :nnext, :nprev
 
-  def initialize nnext, val
-    @nnext = nnext
-    @val  = val
+  def initialize nnext, nprev, params
+    @nnext  = nnext
+    @nprev  = nprev
+    @pid    = params[:pid]
+    @init   = params[:init]
+    @size   = params[:size]
+    @type   = params[:type]
   end
 
   #insert value on the beginning of the list
-  def self.push value, head
+  def self.push head, params
     if(head.nil?)
-      return LinkedList.new(nil, value)
+      head = LinkedList.new(nil, nil, params)
+      head.nnext = head
+      head.nprev = head
+      return head
     else
-      return LinkedList.new(head, value)
+      tail = head.nprev
+      new_node = LinkedList.new(nil, nil, params)
+      head.nprev     = new_node
+      new_node.nnext = head
+      new_node.nprev = tail
+      tail.nnext     = new_node
+      return new_node
     end
   end
 
-  #insert value in the end of the list
-  def self.enqueue value, head
-    if(head.nil?)
-      return LinkedList.new(head, value)
-    else
-      head.nnext = LinkedList.enqueue(value, head.nnext)
+def self.enqueue head, params
+  if(head.nil?)
+      head = LinkedList.new(nil, nil, params)
+      head.nnext = head
+      head.nprev = head
       return head
-    end
+  else
+    tail = head.nprev
+    new_node = LinkedList.new(nil, nil, params)
+    head.nprev     = new_node
+    new_node.nnext = head
+    new_node.nprev = tail
+    tail.nnext     = new_node
+    return head
   end
+end
 
   #remove value on the beginning of the list
   def self.pop head
     aux  = head
     if(aux != nil)
-      head = head.nnext
-      val = aux.val
+      tail       = head.nprev
+      head       = head.nnext
+      head.nprev = tail
+      tail.nnext = head
+      aux.nnext  = nil
+      aux.nprev  = nil
+      params     = aux.to_params
     else
-      val = nil
+      params = nil
     end
-    return [val, head]
+    return [params, head]
   end
 
   # alias :dequeue :self.pop
@@ -54,7 +79,7 @@ class LinkedList
     return c
   end
 
-  def self.print head
+  def self.print head, type='direct'
     aux = head
     c = 0
     
@@ -63,21 +88,56 @@ class LinkedList
       return
     end
 
-    while aux != nil
-      printf "[#{aux.val}] "
-      aux = aux.nnext
-      c += 1
-    end
+    if(type == 'direct')
+      puts "\nDirect Print"
+      loop do
+        printf "[#{aux.val}] "
+        aux = aux.nnext
+        c += 1
+        break if aux == head
+      end
+    elsif(type == 'reverse')
+      puts "\nReverse Print"
+      loop do
+        printf "[#{aux.val}] "
+        aux = aux.nprev
+        c += 1
+        break if aux == head
+      end
+    end    
   end
+
+  def to_params
+    return {
+      pid: self.pid, 
+      init: self.init, 
+      size: self.size, 
+      type: self.type
+    }
+  end
+
 end
 
-# t = Array(1..4)
-# head = nil
-# t.shuffle.each do |v|
-#   head = LinkedList.push(v, head)
-# end
+t = Array(1..4)
+head = nil
+
+params = [
+  {pid: 1, init: 0, size:  10,  type: 'P'},
+  {pid: 2, init: 10, size:  5,  type: 'L'},
+  {pid: 3, init: 15, size: 22,  type: 'P'},
+  {pid: 4, init: 37, size: 23,  type: 'P'}
+]
+t.each_with_index do |v, i|
+  head = LinkedList.enqueue(head, params[i])
+end
+
+binding.pry
+
 
 # LinkedList.print(head)
+# LinkedList.print(head, 'reverse')
+
+# binding.pry
 
 # puts "List size before : #{LinkedList.size(head)}"
 
