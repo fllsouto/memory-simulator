@@ -1,55 +1,79 @@
 # encoding: utf-8
-# require "ruby_basic_app/version"
-require_relative 'memory_simulator'
+require 'readline'
 
-module RubyBasicApp
+require_relative 'memory_manager'
+require_relative 'process_manager'
+
+class RubyBasicApp
 
   COMMANDS = {
-    load:       "carregar",
-    space:      "espaco",
-    replace:    "substitui",
-    execute:    "executa",
-    undefined:  "undefined",
-    exit:       "sai",
+    "carregar"  => :load,
+    "espaco"    => :space,
+    "substitui" => :replace,
+    "executa"   => :execute,
+    "sai"       => :exit
   }
 
-  def main
-    simulator = MemorySimulator.instance
+  def initialize
+    @exit_flag = false
 
-    while !simulator.exit_flag
-      comamnd = simulator.read_command
-      simulator.parse_command(comamnd)
-      simulator.run_command(comamnd)
+    @process_manager = ProcessManager.new()
+    @memory_manager = MemoryManager.instance()
+  end
+
+  def main
+
+    while !@exit_flag
+      command, args = read_command
+      run_command(command, args)
     end
   end
 
   def read_command
-    print "[ep2] : "
-    command = gets.chomp
+    input = Readline.readline('[ep2]: ', true)
+    command = input.chomp.split
+    [command.first, command.drop(1)]
   end
 
-  def parse_command command
-    case command
-    when COMMANDS[:load]
-      puts "Comando inserido : #{command}"
-    when COMMANDS[:space]
-      puts "Comando inserido : #{command}"
-    when COMMANDS[:replace]
-      puts "Comando inserido : #{command}"
-    when COMMANDS[:execute]
-      puts "Comando inserido : #{command}"
-    when COMMANDS[:exit]
-      puts "Comando inserido : #{command}"
-      puts "Vou sair"
-      @exit_flag = true
+  def run_command command, args
+    if COMMANDS.keys.include? command
+      if command != "sai" && args.size < 1
+        puts "Argumentos faltando"
+        return
+      end
+      # executa o método do comando
+      self.send(COMMANDS[command], args)
     else
-      puts "Comando inserido Desconhecido"
+      puts "Comando não reconhecido"
     end
   end
 
-  def run_command command
+  def load args
+    trace = File.new(args[0], 'r')
+    physical_mem, virtual_mem = trace.gets.split.map(&:to_i)
+    trace.close
 
+    @memory_manager.set_mem_sizes(physical_mem, virtual_mem)
+    @process_manager.set_trace_file(args[0])
+  end
+
+  def space args
+    @memory_manager.space = args[0].to_i
+  end
+
+  def replace args
+    @memory_manager.replace = args[0].to_i
+  end
+
+  def execute args
+    # Uma thread para cada manager, se comunicam por Queues
+  end
+
+  def exit
+    #Apaga arquivos de memória
+    puts "Saindo"
+    @@exit_flag = true
   end
 end
 
-RubyBasicApp.main
+RubyBasicApp.new.main
