@@ -1,14 +1,32 @@
 # encoding: utf-8
 
+require "thread"
+require 'pry'
+
 class MemoryManager
 
-  attr_accessor :space, :replace
+  attr_accessor :space, :replace, :queue
+
+  SPACE_ALGORITHM = {
+    first_fit: 1,
+    next_fit:  2,
+    quick_fit: 3
+  }
+
+  REPLACE_ALGORITHM = {
+    not_recently_user_page: 1,
+    first_in_first_out: 2,
+    second_change_page: 3,
+    least_recently_user_page: 4
+  }
 
   def initialize
     @physical_mem_size = nil
     @virtual_mem_size = nil
     @space = nil
     @replace = nil
+    @exit_simulation = false
+    @queue = Queue.new
   end
 
   @@instance = MemoryManager.new
@@ -19,6 +37,15 @@ class MemoryManager
 
   def self.new_method
     return @@instance
+  end
+
+  def start_simulation
+    puts "Thread info : #{Thread.current}"
+    loop do
+      event = @queue.pop
+      self.send(event.type, event)
+      break if @exit_simulation
+    end
   end
 
   def set_mem_sizes physical, virtual
@@ -35,4 +62,30 @@ class MemoryManager
     virtual_mem_file.write(([-1]*virtual).pack('c*'))
     virtual_mem_file.close
   end
+
+  def start_process event
+    
+  end
+
+  def memory_access event
+  
+  end
+
+  def finish_process event
+
+  end
+
+
+  def end_simulation event
+    @exit_simulation = true
+  end
+
+  def print_status event
+    puts "#{event.time}" #TODO verificar compartilhamento de singleton entre threads
+  end
+
+  def can_execute?
+    @physical_mem_size && @virtual_mem_size && @space && replace 
+  end
+
 end

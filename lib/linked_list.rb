@@ -65,9 +65,6 @@ end
     return [params, head]
   end
 
-  # alias :dequeue :self.pop
-
-
 
   def self.size head
     aux = head

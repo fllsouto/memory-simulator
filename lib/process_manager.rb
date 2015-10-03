@@ -1,9 +1,10 @@
 # encoding: utf-8
 require "awesome_print"
+require "thread"
 
 class ProcessManager
 
-  attr_accessor :event_queue
+  attr_accessor :begin_time, :event_queue, :trace_file, :interval_time
 
   Event = Struct.new(:type, :time, :name, :pid, :size, :address) do
     def to_s
@@ -12,7 +13,9 @@ class ProcessManager
   end
 
   def initialize
+    @begin_time = nil
     @trace_file = nil
+    @last_time = nil
     @event_queue = []
   end
 
@@ -33,12 +36,13 @@ class ProcessManager
   end
 
   def start_simulation
-    begin_time = Time.now
+    puts "Thread info : #{Thread.current}"
+    @begin_time = Time.now
     while !@event_queue.empty? do
       next_event = @event_queue.shift
-      next_time = next_event.time - (Time.now - begin_time)
+      next_time = next_event.time - (Time.now - @begin_time)
       sleep(next_time) if next_time > 0.0
-      puts "#{Time.now}: Enviando evento #{next_event.to_s}\n "
+      MemoryManager.instance.queue << next_event
     end
   end
 
@@ -69,8 +73,22 @@ class ProcessManager
       end
     end
 
+
+
     @event_queue.sort! { |a, b| a.time <=> b.time}
-    last_time = @event_queue.last.time
-    @event_queue << Event.new('end_simulation', last_time + 1)
+    @simulation_time = @event_queue.last.time
+    @event_queue << Event.new('end_simulation', @simulation_time + 1)
+  end
+
+  def event_debug event
+    puts "#{Time.now}: Enviando evento #{event}\n "
+  end
+
+  def set_interval_time interval_time
+    print_event_qnt =  (@simulation_time.to_f / interval_time).floor
+    (1..print_event_qnt).each do |i|
+      @event_queue << Event.new('print_status', i*interval_time)
+    end
+    @event_queue.sort! { |a, b| a.time <=> b.time}
   end
 end
