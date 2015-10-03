@@ -29,12 +29,12 @@
 ## TODO
 
 #### LinkedList
-- colocar um ponteiro para o cara anterior
-- acertar o tipo de dado que o val irá receber
+- [X] colocar um ponteiro para o cara anterior
+- [X] acertar o tipo de dado que o val irá receber
 
 #### ProcessManager
-- definir como singleton    
-- criar estrutura de dados para salvar dados do trace
+- [X] definir como singleton    
+- [X] criar estrutura de dados para salvar dados do trace
 
 ### RubyBasicApp
 - alterar da aplicação
