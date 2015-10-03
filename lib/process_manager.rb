@@ -5,7 +5,11 @@ class ProcessManager
 
   attr_accessor :event_queue
 
-  Event = Struct.new(:type, :time, :name, :pid, :size, :address)
+  Event = Struct.new(:type, :time, :name, :pid, :size, :address) do
+    def to_s
+      "\ntype : #{type}, \ntime : #{time}, \nname : #{name}, \npid : #{pid}, \nsize : #{size}, \naddress : #{address}"
+    end
+  end
 
   def initialize
     @trace_file = nil
@@ -26,6 +30,16 @@ class ProcessManager
     @trace_file = path
 
     parse_trace_file path
+  end
+
+  def start_simulation
+    begin_time = Time.now
+    while !@event_queue.empty? do
+      next_event = @event_queue.shift
+      next_time = next_event.time - (Time.now - begin_time)
+      sleep(next_time) if next_time > 0.0
+      puts "#{Time.now}: Enviando evento #{next_event.to_s}\n "
+    end
   end
 
   def parse_trace_file path
@@ -55,6 +69,8 @@ class ProcessManager
       end
     end
 
-    @event_queue.sort { |a, b| a.time <=> b.time}
+    @event_queue.sort! { |a, b| a.time <=> b.time}
+    last_time = @event_queue.last.time
+    @event_queue << Event.new('end_simulation', last_time + 1)
   end
 end

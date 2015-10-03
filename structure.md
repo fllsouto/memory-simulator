@@ -12,9 +12,9 @@
 
 
 ### Main:  
-- Lê entrada e saida
-- Configura outras classes
-- Inicia execução
+- [X] Lê entrada e saida
+- [X] Configura outras classes
+- [x]  Inicia execução
 
 ### ProcessManager  
 - Interpreta o trace
