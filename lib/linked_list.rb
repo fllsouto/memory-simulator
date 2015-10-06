@@ -118,15 +118,18 @@ class MemoryList < LinkedList
     super(nnext, nprev)
   end
 
-  def is_free_segment? init, size
-    aux = self
+  def self.is_free_segment? head, init, size
+    
+    aux = head
+    return true if head == nil
+
     loop do
       if(aux.type == 'L' && init >= aux.init && init + size <= aux.end)  
         return true
       else
         aux = aux.nnext
       end
-      break if aux == self
+      break if aux == head
     end
     return false
   end
@@ -138,6 +141,19 @@ class MemoryList < LinkedList
   end
 
   def join_free_segment
+  end
+
+  def show_memory
+    aux = self
+    puts "-"*140
+    puts "\n"
+    loop do
+      printf "[#{aux.type} (#{aux.init} : #{aux.size})]"
+      aux = aux.nnext
+      break if aux == self 
+    end
+    puts "\n"
+    puts "-"*140
   end
 
   def to_params
@@ -153,15 +169,25 @@ class MemoryList < LinkedList
     self.init + self.size
   end
 
+  def self.enqueue head, params
+    if(MemoryList.is_free_segment?(head, params[:init], params[:size]))
+      binding.pry
+      super(head, params)
+    else
+      binding.pry
+    end
+  end
+
 end
 
 # t = Array(1..4)
 head = nil
 
 params = [
-  {pid: -1, init: 0, size:  10,  type: 'L'},
-  {pid: 2, init: 10, size:  6,  type: 'P'}
-  # {pid: 3, init: 15, size: 22,  type: 'P'},
+  {pid: -1, init: 0, size:  32,  type: 'L'},
+  {pid: 2, init: 10, size:  6,  type: 'P'},
+  {pid: 3, init: 4, size: 5,  type: 'P'},
+  {pid: 2, init: 0, size:  9,  type: 'P'}
   # {pid: 4, init: 37, size: 23,  type: 'P'}
 ]
 params.each do |param|
