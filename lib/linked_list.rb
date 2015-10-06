@@ -2,27 +2,23 @@ require 'pry'
 
 class LinkedList
 
-  attr_accessor :pid, :init, :size, :type, :nnext, :nprev
+  attr_accessor :nnext, :nprev
 
-  def initialize nnext, nprev, params
+  def initialize nnext, nprev
     @nnext  = nnext
     @nprev  = nprev
-    @pid    = params[:pid]
-    @init   = params[:init]
-    @size   = params[:size]
-    @type   = params[:type]
   end
 
   #insert value on the beginning of the list
   def self.push head, params
     if(head.nil?)
-      head = LinkedList.new(nil, nil, params)
+      head = self.new(nil, nil, params)
       head.nnext = head
       head.nprev = head
       return head
     else
       tail = head.nprev
-      new_node = LinkedList.new(nil, nil, params)
+      new_node = self.new(nil, nil, params)
       head.nprev     = new_node
       new_node.nnext = head
       new_node.nprev = tail
@@ -33,13 +29,13 @@ class LinkedList
 
 def self.enqueue head, params
   if(head.nil?)
-      head = LinkedList.new(nil, nil, params)
+      head = self.new(nil, nil, params)
       head.nnext = head
       head.nprev = head
       return head
   else
     tail = head.nprev
-    new_node = LinkedList.new(nil, nil, params)
+    new_node = self.new(nil, nil, params)
     head.nprev     = new_node
     new_node.nnext = head
     new_node.nprev = tail
@@ -105,27 +101,71 @@ end
   end
 
   def to_params
-    return {
-      pid: self.pid, 
-      init: self.init, 
-      size: self.size, 
-      type: self.type
-    }
+    return {}
   end
 
 end
 
-t = Array(1..4)
+class MemoryList < LinkedList
+
+  attr_accessor :pid, :init, :size, :type
+
+  def initialize nnext, nprev, params
+    @pid    = params[:pid]
+    @init   = params[:init]
+    @size   = params[:size]
+    @type   = params[:type]
+    super(nnext, nprev)
+  end
+
+  def is_free_segment? init, size
+    aux = self
+    loop do
+      if(aux.type == 'L' && init >= aux.init && init + size <= aux.end)  
+        return true
+      else
+        aux = aux.nnext
+      end
+      break if aux == self
+    end
+    return false
+  end
+
+  def set_process
+  end
+
+  def remove_process
+  end
+
+  def join_free_segment
+  end
+
+  def to_params
+    {    
+      pid: self.pid, 
+      init: self.init, 
+      size: self.size, 
+      type: self.type
+    }.merge(super)
+  end
+
+  def end
+    self.init + self.size
+  end
+
+end
+
+# t = Array(1..4)
 head = nil
 
 params = [
-  {pid: 1, init: 0, size:  10,  type: 'P'},
-  {pid: 2, init: 10, size:  5,  type: 'L'},
-  {pid: 3, init: 15, size: 22,  type: 'P'},
-  {pid: 4, init: 37, size: 23,  type: 'P'}
+  {pid: -1, init: 0, size:  10,  type: 'L'},
+  {pid: 2, init: 10, size:  6,  type: 'P'}
+  # {pid: 3, init: 15, size: 22,  type: 'P'},
+  # {pid: 4, init: 37, size: 23,  type: 'P'}
 ]
-t.each_with_index do |v, i|
-  head = LinkedList.enqueue(head, params[i])
+params.each do |param|
+  head = MemoryList.enqueue(head, param)
 end
 
 binding.pry
