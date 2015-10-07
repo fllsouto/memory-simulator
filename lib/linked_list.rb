@@ -124,7 +124,7 @@ class MemoryList < LinkedList
     return true if head == nil
 
     loop do
-      if(aux.type == 'L' && init >= aux.init && init + size <= aux.end)  
+      if(aux.type == 'L' && init >= aux.init && init + size < aux.end)  
         return true
       else
         aux = aux.nnext
