@@ -7,19 +7,6 @@ class MemoryManager
 
   attr_accessor :space, :replace, :queue
 
-  SPACE_ALGORITHM = {
-    first_fit: 1,
-    next_fit:  2,
-    quick_fit: 3
-  }
-
-  REPLACE_ALGORITHM = {
-    not_recently_user_page: 1,
-    first_in_first_out: 2,
-    second_change_page: 3,
-    least_recently_user_page: 4
-  }
-
   def initialize
     @physical_mem_size = nil
     @virtual_mem_size = nil
@@ -40,7 +27,7 @@ class MemoryManager
   end
 
   def start_simulation
-    puts "Thread info : #{Thread.current}"
+    puts "MemoryManager Thread: #{Thread.current}"
     loop do
       event = @queue.pop
       self.send(event.type, event)
@@ -64,11 +51,11 @@ class MemoryManager
   end
 
   def start_process event
-    
+
   end
 
   def memory_access event
-  
+
   end
 
   def finish_process event
@@ -85,7 +72,7 @@ class MemoryManager
   end
 
   def can_execute?
-    @physical_mem_size && @virtual_mem_size && @space && replace 
+    @physical_mem_size && @virtual_mem_size && @space && replace
   end
 
 end
