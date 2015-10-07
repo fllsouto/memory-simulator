@@ -170,12 +170,28 @@ class MemoryList < LinkedList
   end
 
   def self.enqueue head, params
-    if(MemoryList.is_free_segment?(head, params[:init], params[:size]))
+    # if(MemoryList.is_free_segment?(head, params[:init], params[:size]))
+    #   binding.pry
+    return super(head, params)
+    # else
+    #   binding.pry
+    # end
+  end
+
+  def self.enqueue_with_position head, params, position
+    c = 0
+    aux = head
+    loop do
       binding.pry
-      super(head, params)
-    else
-      binding.pry
+      if(c == position)
+        MemoryList.enqueue(aux, params)
+        binding.pry
+      end
+      c += 1
+      aux = aux.nnext
+      break if(aux == head || c > position)
     end
+    return head
   end
 
 end
@@ -193,7 +209,12 @@ params = [
 params.each do |param|
   head = MemoryList.enqueue(head, param)
 end
-
+binding.pry
+a = {pid: 5, init: 13, size:  9,  type: 'P'}
+head = MemoryList.enqueue_with_position(head, a, 1)
+binding.pry
+a = {pid: 5, init: 10, size:  1,  type: 'P'}
+head = MemoryList.enqueue_with_position(head, a, 0)
 binding.pry
 
 
