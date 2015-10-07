@@ -1,6 +1,8 @@
 # encoding: utf-8
 require 'readline'
 
+require_relative 'space_algorithm'
+require_relative 'replace_algorithm'
 require_relative 'memory_manager'
 require_relative 'process_manager'
 
@@ -58,20 +60,24 @@ class RubyBasicApp
   end
 
   def space args
-    key = MemoryManager::SPACE_ALGORITHM.key(args[0].to_i) rescue nil 
-    if(key.nil?)
+    key = args[0]
+    algorithm = Space::Algorithm[key]
+    if(algorithm.nil?)
       puts "Algoritmo de gerenciamento de espaço livre não encontrado! \n1. First Fit \n2. Next Fit \n3. Quick Fit"
     else
-      @memory_manager.space = key
+      puts "Algoritmo selecionado: #{algorithm}"
+      @memory_manager.space = algorithm
     end
   end
 
   def replace args
-    key = MemoryManager::REPLACE_ALGORITHM.key(args[0].to_i) rescue nil 
-    if(key.nil?)
+    key = args[0]
+    algorithm = Replace::Algorithm[key]
+    if(algorithm.nil?)
       puts "Algoritmo de substituição de páginas não encontrado! \n1. Not Recently Used Page\n2. First-In, First-Out\n3. Second-Chance Page\n4. Least Recently Used Page"
     else
-      @memory_manager.replace = key
+      puts "Algoritmo selecionado: #{algorithm}"
+      @memory_manager.replace = algorithm
     end
   end
 
