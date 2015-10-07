@@ -6,11 +6,11 @@ class ProcessManager
 
   attr_accessor :begin_time, :event_queue, :trace_file, :interval_time
 
-  Process = Struct.new(:name, :pid, :size)
+  Process = Struct.new(:name, :pid ,:size)
 
   Event = Struct.new(:type, :time, :process, :address) do
     def to_s
-      "type : #{type}, \ntime : #{time}, \nname : #{process.name}, \npid : #{process.pid}, \nsize : #{process.size}, \naddress : #{address}"
+      "type : #{type}, \ntime : #{time}, \nname : #{process && process.name}, \npid : #{process && process.pid}, \nsize : #{process && process.size}, \naddress : #{address}"
     end
   end
 
@@ -43,6 +43,7 @@ class ProcessManager
       @event_queue << Event.new('print_status', i*interval_time)
     end
     @event_queue.sort! { |a, b| a.time <=> b.time}
+    binding.pry
   end
 
   def start_simulation
@@ -53,6 +54,7 @@ class ProcessManager
       next_time = next_event.time - (Time.now - @begin_time)
       sleep(next_time) if next_time > 0.0
       MemoryManager.instance.queue << next_event
+      event_debug(next_event)
     end
   end
 
@@ -90,6 +92,6 @@ class ProcessManager
   end
 
   def event_debug event
-    puts "#{Time.now}: Enviando evento #{event}\n "
+    puts "Time : #{Time.now} \n#{event}\n "
   end
 end
