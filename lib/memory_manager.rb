@@ -6,6 +6,8 @@ require 'pry'
 class MemoryManager
 
   attr_accessor :space, :replace, :queue
+  
+  OFFSET = 4
 
   def initialize
     @physical_mem_size = nil
@@ -14,6 +16,8 @@ class MemoryManager
     @replace = nil
     @exit_simulation = false
     @queue = Queue.new
+    @process_table = {}
+    @frame_number_bits = nil
   end
 
   @@instance = MemoryManager.new
@@ -38,7 +42,13 @@ class MemoryManager
   def set_mem_sizes physical, virtual
     @physical_mem_size = physical
     @virtual_mem_size = virtual
-
+    
+    virtual_page = virtual / 16
+    @page_entries = Array.new(virtual_pages_qnt, 0)
+    
+    physical_pages = physical / 16
+    @frame_number_bits = (Math.log2(physical_pages)).ceil
+    
     puts "Initializing physical memory with #{physical} bytes"
     physical_mem_file = File.new('ep2.mem', 'wb')
     physical_mem_file.write(([-1]*physical).pack('c*'))
@@ -51,15 +61,25 @@ class MemoryManager
   end
 
   def start_process event
-
+    process = event.process
+    base = @space.allocate_process process
+    @process_table[process.pid] = {base: base}
   end
 
   def memory_access event
-
+    local_addr = event.address
+    virtual_addr = @process_table[pid][base] + local_addr
+  
+    page = virtual_addr >> OFFSET
+    entry = @page_entries[page]
+    frame_number = 
+    present = (entry >> @frame_number_bits) & 0x0001
   end
 
   def finish_process event
-
+    process = event.process
+    @space.free_process process
+    @process_table[process.pid] = nil
   end
 
 

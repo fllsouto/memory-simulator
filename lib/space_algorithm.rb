@@ -1,13 +1,13 @@
 module Space
-  module FirstFit
+  class FirstFit
 
   end
 
-  module NextFit
+  class NextFit
 
   end
 
-  module QuickFit
+  class QuickFit
 
   end
 

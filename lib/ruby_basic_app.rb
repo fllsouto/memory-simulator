@@ -61,7 +61,7 @@ class RubyBasicApp
 
   def space args
     key = args[0]
-    algorithm = Space::Algorithm[key]
+    algorithm = Space::Algorithm[key].new
     if(algorithm.nil?)
       puts "Algoritmo de gerenciamento de espaço livre não encontrado! \n1. First Fit \n2. Next Fit \n3. Quick Fit"
     else
@@ -72,7 +72,7 @@ class RubyBasicApp
 
   def replace args
     key = args[0]
-    algorithm = Replace::Algorithm[key]
+    algorithm = Replace::Algorithm[key].new
     if(algorithm.nil?)
       puts "Algoritmo de substituição de páginas não encontrado! \n1. Not Recently Used Page\n2. First-In, First-Out\n3. Second-Chance Page\n4. Least Recently Used Page"
     else
