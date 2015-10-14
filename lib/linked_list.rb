@@ -1,59 +1,91 @@
 require 'pry'
+
 class LinkedList
 
-  attr_accessor :head
-  def initialize
+  attr_accessor :head, :node_class
+  def initialize node_class=Node
     @head = nil
+    @node_class = node_class
   end
 
   def enqueue  params
-    if(self.head.nil?)
-      self.head = Node.new(nil, nil, params)
-      self.head.nnext = self.head
-      self.head.nprev = self.head
+    if(@head.nil?)
+      @head = @node_class.new(nil, nil, params)
+      @head.nnext = @head
+      @head.nprev = @head
     else
-      tail = self.head.nprev
-      new_node = Node.new(nil, nil, params)
-      self.head.nprev     = new_node
-      new_node.nnext = self.head
+      tail = @head.nprev
+      new_node = @node_class.new(nil, nil, params)
+      @head.nprev     = new_node
+      new_node.nnext = @head
       new_node.nprev = tail
       tail.nnext     = new_node
     end
   end
 
-  def show_list
-    aux = self.head
-    loop do
-      printf "[#{aux.to_mem}] "
-      aux = aux.nnext
-      break if aux == self.head
+  def pop
+    aux  = @head
+    if(aux != nil)
+      if (aux != aux.nnext)
+        tail       = @head.nprev
+        head       = @head.nnext
+        head.nprev = tail
+        tail.nnext = head
+        aux.nnext  = nil
+        aux.nprev  = nil
+      else
+        @head = nil
+      end
+      node       = aux
+    else
+      node = nil
     end
+    return node
+  end
+
+  def to_s
+    string = ""
+    aux = @head
+    if !aux.nil? 
+      loop do 
+        string += "[#{aux.to_mem}] "
+        aux = aux.nnext
+        break if aux == @head
+      end
+    else
+      string = "EMPTY"
+    end
+    string
+  end
+
+  def show_list
+    puts to_s
   end
 
   def show_details_list
-    aux = self.head
+    aux = @head
     loop do
       puts aux.detail_node
       aux = aux.nnext
-      break if aux == self.head
+      break if aux == @head
     end
   end
 
   def enqueue_with_position params, position
     return if position < 0 
     c = 0
-    aux = self.head
+    aux = @head
     loop do
       if(c == position)
-        new_node = Node.new(aux.nprev, aux, params)
+        new_node = @node_class.new(aux.nprev, aux, params)
         nprev = aux.nprev
         nprev.nnext = new_node
         aux.nprev = new_node
-        self.head = new_node if (position == 0)
+        @head = new_node if (position == 0)
       end
       c += 1
       aux = aux.nnext
-      break if(aux == self.head || c > position)
+      break if(aux == @head || c > position)
     end
   end
 
@@ -61,27 +93,11 @@ end
 
 class Node
 
-  attr_accessor :nprev, :nnext, :pid, :init, :size, :type
-  def initialize nprev, nnext, params
+  attr_accessor :nprev, :nnext
+  def initialize nprev, nnext
     @nnext = nnext
     @nprev = nprev
-    @pid =  params[:pid]
-    @init = params[:init]
-    @size = params[:size]
-    @type = params[:type]
   end
-  def to_s
-   puts "\nPID : #{self.pid}, \nInit : #{self.init}, \nSize : #{self.size}, \nType : #{self.type}"
-  end
-
-  def to_mem
-    "[#{self.type}(#{self.pid}) -- #{self.init} : #{self.size}]"
-  end
-
-  def detail_node
-    "(#{self.nprev.object_id}) <--[#{self.object_id}]#{self.to_mem}--> (#{self.nnext.object_id})"
-  end
-
 end
 
 # a = {init: 0, size: 16}

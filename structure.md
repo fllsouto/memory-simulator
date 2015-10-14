@@ -35,6 +35,9 @@
 #### ProcessManager
 - [X] definir como singleton    
 - [X] criar estrutura de dados para salvar dados do trace
+- [ ] criar eventos de impressão
+- [ ] medir o tempo em que um evento começa a ser executado e comparar com o tempo em que ele deveria ter começado. Avaliar esse delta
+
 
 ### RubyBasicApp
 - alterar da aplicação
