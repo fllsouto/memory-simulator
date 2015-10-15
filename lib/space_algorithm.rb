@@ -13,7 +13,7 @@ module Space
       if(free_space)
         init = free_space.init
         @mem_list.set_process_on_free_position(proc, free_space)
-        return init
+        return init*16
       else
         return -1
       end

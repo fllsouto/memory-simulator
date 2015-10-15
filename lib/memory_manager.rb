@@ -99,7 +99,20 @@ class MemoryManager
   end
 
   def print_status event
-    puts @space.mem_list
+    puts '--------------------------'
+    puts "LINKED LIST"
+    puts @space.mem_list.to_s
+    puts 'VIRTUAL MEMORY'
+    virtual_mem = IO.read(VIRTUAL_MEM).unpack('c*')
+    pages = virtual_mem.size / PAGE_SIZE
+    (0...pages).each do |i|
+      print '['
+      printf '%2d', virtual_mem[i*PAGE_SIZE]
+      (1...16).each do |j|
+        printf ', %2d', virtual_mem[i*PAGE_SIZE + j]
+      end
+      puts ']'
+    end
   end
 
   def can_execute?
