@@ -9,7 +9,7 @@ module Space
     end
 
     def find_free_space proc
-      free_space = find(proc)
+      free_space = find(proc.units)
       if(free_space)
         init = free_space.init
         @mem_list.set_process_on_free_position(proc, free_space)
@@ -19,10 +19,10 @@ module Space
       end
     end
 
-    def find proc
+    def find size
       aux = @mem_list.head
       loop do
-        return aux if(aux.type == 'L' and aux.size >= proc[:size])
+        return aux if(aux.type == 'L' and aux.size >= size)
         aux = aux.nnext
         break if aux == @mem_list.head
       end
@@ -72,9 +72,9 @@ module Space
 
     #diferente do first fit pq tenho que inserir o cara que o set_process_on_free-pos no array de free_positions
     SLICE_SIZE = 16
-    
+
     attr_accessor :mem_free_vector
-    
+
     def initialize vmz
       @mem_free_vector = Array.new(vmz / SLICE_SIZE)
       @mem_free_vector.each{|v| v = LinkedList.new(FreeMemoryList)}
@@ -90,7 +90,7 @@ module Space
     end
 
     def insert f_proc
-      return if f_proc.size < PAGE_SIZE 
+      return if f_proc.size < PAGE_SIZE
       indx = f_proc.size / PAGE_SIZE - 1
       @mem_free_vector[indx].enqueue(f_proc)
     end

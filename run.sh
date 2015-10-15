@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ruby 'lib/memory_simulator.rb' 
+ruby 'lib/simulator.rb' 

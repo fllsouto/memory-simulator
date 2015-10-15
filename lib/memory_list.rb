@@ -46,10 +46,11 @@ class MemoryList < LinkedList
     self.enqueue({pid: -1, init: 0, size:  virtual_mem_units,  type: 'L'})
   end
 
-  def set_process_on_free_position params, f_pos
+  def set_process_on_free_position proc, f_pos
     return nil if (f_pos.nil? || f_pos.type == 'P')
-    if f_pos.size >= params[:size]
-      if params[:size] == f_pos.size
+    if f_pos.size >= proc.units
+      params = {pid: proc.pid, init: f_pos.init, size: proc.units, type: 'P'}
+      if proc.units == f_pos.size
         node = @node_class.new(nil, nil, params)
 
         if(f_pos == f_pos.nnext)
@@ -92,22 +93,21 @@ class MemoryList < LinkedList
     end
   end
 
-  def set_process_to_free_position proc
+  def set_process_to_free_position proc_node
     node = @node_class.new(nil, nil, {type: 'L', pid: -1})
-    self.head = node if self.head == proc
+    self.head = node if self.head == proc_node
 
-    nnext       = proc.nnext
-    nprev       = proc.nprev
+    nnext       = proc_node.nnext
+    nprev       = proc_node.nprev
     node.nnext  = nnext
     nnext.nprev = node
     node.nprev  = nprev
     nprev.nnext = node
 
-    node.nprev  = proc.nprev
-    node.init   = proc.init
-    node.size   = proc.size
-    proc.nnext  = nil
-    proc.nprev  = nil
+    node.init   = proc_node.init
+    node.size   = proc_node.size
+    proc_node.nnext  = nil
+    proc_node.nprev  = nil
   end
 
   def release_process pid

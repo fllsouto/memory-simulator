@@ -6,7 +6,8 @@ class ProcessManager
 
   attr_accessor :begin_time, :event_queue, :trace_file, :interval_time
 
-  Process = Struct.new(:name, :pid ,:size)
+  Process = Struct.new(:name, :pid ,:size, :units) do
+  end
 
   Event = Struct.new(:type, :time, :process, :address) do
     def to_s
@@ -42,19 +43,18 @@ class ProcessManager
     (1..print_event_qnt).each do |i|
       @event_queue << Event.new('print_status', i*interval_time)
     end
-    @event_queue.sort! { |a, b| a.time <=> b.time}
-    binding.pry
+    @event_queue.sort_by!.with_index { |e, id| [e.time, id] }
   end
 
   def start_simulation
     puts "ProcessManager Thread: #{Thread.current}"
     @begin_time = Time.now
     while !@event_queue.empty? do
-      next_event = @event_queue.shift
-      next_time = next_event.time - (Time.now - @begin_time)
+     event = @event_queue.shift
+      next_time = event.time - (Time.now - @begin_time)
       sleep(next_time) if next_time > 0.0
-      MemoryManager.instance.queue << next_event
-      event_debug(next_event)
+      MemoryManager.instance.send(event.type, event)
+      # event_debug(next_event)
     end
   end
 
@@ -84,11 +84,8 @@ class ProcessManager
       end
     end
 
-
-
-    @event_queue.sort! { |a, b| a.time <=> b.time}
+    @event_queue.sort_by!.with_index { |e, id| [e.time, id] }
     @simulation_time = @event_queue.last.time
-    @event_queue << Event.new('end_simulation', @simulation_time + 1)
   end
 
   def event_debug event

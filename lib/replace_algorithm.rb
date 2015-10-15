@@ -1,17 +1,17 @@
 module Replace
-  module NotRecentlyUsed
+  class NotRecentlyUsed
 
   end
 
-  module FirstInFirstOut
+  class FirstInFirstOut
 
   end
 
-  module SecondChance
+  class SecondChance
 
   end
 
-  module LeastRecentlyUsed
+  class LeastRecentlyUsed
 
   end
 
