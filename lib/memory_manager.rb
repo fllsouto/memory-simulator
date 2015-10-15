@@ -8,21 +8,20 @@ require_relative 'linked_list'
 require_relative 'memory_list'
 class MemoryManager
 
-  attr_accessor :space_algorithm, :replace_algorithm, :queue
+  attr_accessor :space_algorithm, :replace_algorithm, :verbose
 
   VIRTUAL_MEM = 'ep2.vir'
   PHYSICAL_MEM = 'ep2.mem'
   PAGE_SIZE = 16
 
   def initialize
+    @verbose = false
     @physical_mem_size = nil
     @virtual_mem_size = nil
     @space_algorithm = nil
     @space = nil
     @replace_algorithm = nil
     @replace = nil
-    @exit_simulation = false
-    @queue = Queue.new
     @process_table = {}
     @frame_number_bits = nil
     @p_bit_mask = nil
@@ -40,8 +39,6 @@ class MemoryManager
   end
 
   def start_simulation
-    puts "MemoryManager Thread: #{Thread.current}"
-
     @space = @space_algorithm.new(@virtual_mem_size)
     @replace = @replace_algorithm.new
   end
@@ -68,8 +65,6 @@ class MemoryManager
 
   def start_process event
     proc = event.process
-    print event.time.to_s + 's (Start)  --> '
-    puts "Starting #{proc.name}"
     proc.units = (proc.size / PAGE_SIZE.to_f).ceil #Convert size to allocation units
     free_space_base = @space.find_free_space proc
     @process_table[proc.pid] = {base: free_space_base}
@@ -96,16 +91,14 @@ class MemoryManager
 
   def finish_process event
     proc = event.process
-    print event.time.to_s + 's (Finish) --> '
-    puts "Finishing #{proc.name}"
     @space.free_process proc
     base = @process_table[proc.pid][:base]
-    IO.write(VIRTUAL_MEM, ([-1]*proc.size).pack('c*'), base)
+    empty_byte_string = ([-1]*proc.units*PAGE_SIZE).pack('c*')
+    IO.write(VIRTUAL_MEM, empty_byte_string, base)
     @process_table[proc.pid] = nil
   end
 
   def print_status event
-    print event.time.to_s + 's (Print)  --> '
     puts @space.mem_list
   end
 

@@ -4,7 +4,7 @@ require "thread"
 
 class ProcessManager
 
-  attr_accessor :begin_time, :event_queue, :trace_file, :interval_time
+  attr_accessor :begin_time, :event_queue, :trace_file, :interval_time, :verbose
 
   Process = Struct.new(:name, :pid ,:size, :units) do
   end
@@ -16,6 +16,7 @@ class ProcessManager
   end
 
   def initialize
+    @verbose = false
     @begin_time = nil
     @trace_file = nil
     @last_time = nil
@@ -47,14 +48,13 @@ class ProcessManager
   end
 
   def start_simulation
-    puts "ProcessManager Thread: #{Thread.current}"
     @begin_time = Time.now
     while !@event_queue.empty? do
      event = @event_queue.shift
       next_time = event.time - (Time.now - @begin_time)
       sleep(next_time) if next_time > 0.0
+      puts "#{event.time}s --> #{event.type}" if @verbose
       MemoryManager.instance.send(event.type, event)
-      # event_debug(next_event)
     end
   end
 
@@ -86,9 +86,5 @@ class ProcessManager
 
     @event_queue.sort_by!.with_index { |e, id| [e.time, id] }
     @simulation_time = @event_queue.last.time
-  end
-
-  def event_debug event
-    puts "Time : #{Time.now} \n#{event}\n "
   end
 end

@@ -14,7 +14,8 @@ class Simulator
     "substitui" => :replace,
     "executa"   => :execute,
     "sai"       => :exit,
-    "quick"     => :quick
+    "quick"     => :quick,
+    "verbose"   => :verbose
   }
 
   def initialize
@@ -40,7 +41,7 @@ class Simulator
 
   def run_command command, args
     if COMMANDS.keys.include? command
-      if command != "sai" && args.size < 1
+      if (command == "carregar" || command == "espaco" || command == "substitui" || command == "executa") && args.size < 1
         puts "Argumentos faltando"
         return
       end
@@ -106,6 +107,11 @@ class Simulator
     space ['1']
     replace ['1']
     execute ['1']
+  end
+
+  def verbose args
+    @process_manager.verbose = true
+    @memory_manager.verbose = true
   end
 end
 
