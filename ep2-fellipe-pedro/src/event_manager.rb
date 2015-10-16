@@ -1,8 +1,6 @@
 # encoding: utf-8
-require "awesome_print"
-require "thread"
 
-class ProcessManager
+class EventManager
 
   attr_accessor :begin_time, :event_queue, :trace_file, :interval_time, :verbose
 
@@ -26,14 +24,10 @@ class ProcessManager
     @event_queue = []
   end
 
-  @@instance = ProcessManager.new
+  @@instance = EventManager.new
 
   def self.instance
-    return @@instance
-  end
-
-  def self.new_method
-    return @@instance
+    return @@instance #EVENT MANAGER IS A SINGLETON CLASS
   end
 
   def set_trace_file path
@@ -72,7 +66,7 @@ class ProcessManager
 
   def parse_trace_file path
     trace_file = File.new(path, 'r')
-    trace_file.gets #discard first line
+    trace_file.gets #DISCARD THE FIRST LINE
     index = 0
     while ((line = trace_file.gets) != nil) do
       args = line.split

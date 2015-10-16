@@ -64,7 +64,7 @@ module Replace
     end
 
     def self.get_inverval_time
-      return 4   
+      return 4 
     end
 
     def reset_r

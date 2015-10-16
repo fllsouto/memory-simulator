@@ -1,18 +1,15 @@
 # encoding: utf-8
 
-require "thread"
-require 'pry'
-require 'awesome_print'
-
 require_relative 'space_algorithm'
 require_relative 'linked_list'
 require_relative 'memory_list'
+
 class MemoryManager
 
   attr_accessor :space_algorithm, :replace_algorithm, :verbose
 
-  VIRTUAL_MEM = 'ep2.vir'
-  PHYSICAL_MEM = 'ep2.mem'
+  VIRTUAL_MEM = '/tmp/ep2.vir'
+  PHYSICAL_MEM = '/tmp/ep2.mem'
   PAGE_SIZE = 16
 
   def initialize
@@ -32,11 +29,7 @@ class MemoryManager
   @@instance = MemoryManager.new
 
   def self.instance
-    return @@instance
-  end
-
-  def self.new_method
-    return @@instance
+    return @@instance #MEMORY MANAGER IS A SINGLETON CLASS
   end
 
   def start_simulation

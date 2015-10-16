@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 require 'readline'
 
 require_relative 'space_algorithm'
@@ -21,7 +22,7 @@ class Simulator
   def initialize
     @exit_flag = false
 
-    @event_manager = ProcessManager.instance()
+    @event_manager = EventManager.instance()
     @memory_manager = MemoryManager.instance()
   end
 
@@ -45,7 +46,7 @@ class Simulator
         puts "Argumentos faltando"
         return
       end
-      # executa o método do comando
+      # EXECUTES THE COMMAND METHOD
       self.send(COMMANDS[command], args)
     else
       puts "Comando não reconhecido"
@@ -93,11 +94,9 @@ class Simulator
       puts "Execução falhou, verifique suas configurações"
       puts "\nArquivo : #{@event_manager.trace_file.inspect}\nAlgoritmo de espaço : #{@memory_manager.space_algorithm.inspect}\nAlgoritmo de página : #{@memory_manager.replace_algorithm.inspect}\n"
     end
-    # Uma thread para cada manager, se comunicam por Queues
   end
 
   def exit args
-    #Apaga arquivos de memória
     puts "Saindo"
     @exit_flag = true
   end
@@ -111,8 +110,8 @@ class Simulator
   end
 
   def verbose args
-    @event_manager.verbose = false
-    @memory_manager.verbose = false
+    @event_manager.verbose = true
+    @memory_manager.verbose = true
   end
 end
 
