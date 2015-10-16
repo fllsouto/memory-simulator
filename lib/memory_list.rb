@@ -14,10 +14,6 @@ class MemoryNode < Node
   end
 
   def to_s
-   puts "\nPID : #{@pid}, \nInit : #{@init}, \nSize : #{@size}, \nType : #{@type}"
-  end
-
-  def to_mem
     "[#{@type}(#{@pid}) -- #{@init} : #{@size}]"
   end
 
@@ -28,11 +24,20 @@ end
 
 class FreeMemoryNode < Node
 
-  attr_accessor :fmn
+  attr_accessor :f_mem_node
 
-  def initialize nprev, nnext, fmn
-    @fmn = fmn
+  def initialize nprev, nnext, f_mem_node
+    @f_mem_node = f_mem_node
     super(nprev, nnext)
+  end
+
+  def equals node
+    return true if self.f_mem_node == node
+    return super(node)
+  end
+
+  def to_s
+    @f_mem_node.to_s
   end
 end
 
@@ -68,7 +73,7 @@ class MemoryList < LinkedList
         node.init   = f_pos.init
         f_pos.nnext = nil
         f_pos.nprev = nil
-        return nil
+        return [node, nil]
       else
         node = @node_class.new(nil, nil, params)
         if(f_pos == f_pos.nnext)
@@ -78,6 +83,7 @@ class MemoryList < LinkedList
           f_pos.nprev = node
           self.head   = node
         else
+          binding.pry if f_pos.nprev.nil? 
           nprev       = f_pos.nprev
           node.nprev  = nprev
           nprev.nnext = node
@@ -88,39 +94,9 @@ class MemoryList < LinkedList
         node.init  = f_pos.init
         f_pos.size = f_pos.size - params[:size]
         f_pos.init = params[:size] + f_pos.init
-        return f_pos
+        return [node, f_pos]
       end
     end
-  end
-
-  def set_process_to_free_position proc_node
-    node = @node_class.new(nil, nil, {type: 'L', pid: -1})
-    self.head = node if self.head == proc_node
-
-    nnext       = proc_node.nnext
-    nprev       = proc_node.nprev
-    node.nnext  = nnext
-    nnext.nprev = node
-    node.nprev  = nprev
-    nprev.nnext = node
-
-    node.init   = proc_node.init
-    node.size   = proc_node.size
-    proc_node.nnext  = nil
-    proc_node.nprev  = nil
-  end
-
-  def release_process pid
-    aux = self.head
-    loop do
-      if(aux.type == 'P' and aux.pid == pid)
-        set_process_to_free_position(aux)
-        return true
-      end
-      aux = aux.nnext
-      break if aux == self.head
-    end
-  return false
   end
 
   def join_free_positions a, b
@@ -131,20 +107,21 @@ class MemoryList < LinkedList
     nnext.nprev = a
     b.nnext = nil
     b.nprev = nil
+    a
   end
 
-  def compact_free_positions
-    aux = self.head
-    loop do
-      if (aux.nnext != self.head)
-        if (aux.type == 'L' and aux.nnext.type == 'L')
-          self.join_free_positions(aux, aux.nnext)
-        else
-          aux = aux.nnext
-        end
-      else
-        break
-      end
+  def set_process_to_free_position node
+    node.type = 'L'
+    node.pid = -1
+
+    if node.nnext != self.head && node.nnext.type == 'L'
+      join_free_positions node, node.nnext
     end
+
+    if node != self.head && node.nprev.type == 'L'
+      node = join_free_positions node.nprev, node
+    end
+
+    node
   end
 end

@@ -24,31 +24,40 @@ class LinkedList
   end
 
   def pop
-    aux  = @head
-    if(aux != nil)
-      if (aux != aux.nnext)
-        tail       = @head.nprev
-        head       = @head.nnext
-        head.nprev = tail
-        tail.nnext = head
-        aux.nnext  = nil
-        aux.nprev  = nil
-      else
-        @head = nil
-      end
-      node       = aux
-    else
-      node = nil
-    end
-    return node
+    delete_node @head
   end
+
+  def delete_node node
+    aux = @head
+    if(aux != nil)
+      loop do
+        if(aux.equals(node))
+          if (aux != aux.nnext)
+            nprev = aux.nprev
+            nnext = aux.nnext
+            nprev.nnext = nnext
+            nnext.nprev = nprev
+            @head = nnext if aux == @head
+          else
+            @head = nil
+          end
+          aux.nnext = nil
+          aux.nprev = nil
+          return aux
+        end
+        aux = aux.nnext
+        break if aux == @head
+      end
+    end
+    return nil
+  end 
 
   def to_s
     string = ""
     aux = @head
     if !aux.nil? 
       loop do 
-        string += "[#{aux.to_mem}] "
+        string += "[#{aux.to_s}] "
         aux = aux.nnext
         break if aux == @head
       end
@@ -93,10 +102,15 @@ end
 
 class Node
 
-  attr_accessor :nprev, :nnext
-  def initialize nprev, nnext
+  attr_accessor :nprev, :nnext, :value
+  def initialize nprev, nnext, value=nil
     @nnext = nnext
     @nprev = nprev
+    @value = value
+  end
+
+  def equals node
+    self == node
   end
 end
 

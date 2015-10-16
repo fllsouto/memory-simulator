@@ -11,7 +11,10 @@ class ProcessManager
 
   Event = Struct.new(:type, :time, :process, :address) do
     def to_s
-      "type : #{type}, \ntime : #{time}, \nname : #{process && process.name}, \npid : #{process && process.pid}, \nsize : #{process && process.size}, \naddress : #{address}"
+      string = "#{time}s --> #{type} "
+      string += "NAME: #{process.name} PID: #{process.pid} " if !process.nil?
+      string += "ADDR: #{address}" if !address.nil?
+      string
     end
   end
 
@@ -40,10 +43,19 @@ class ProcessManager
   end
 
   def set_interval_time interval_time
+    reset_time = MemoryManager.instance.replace_algorithm.get_inverval_time()
+    if reset_time != 0
+      reset_r_qnt =  (@simulation_time.to_f / reset_time).floor
+      (1..reset_r_qnt).each do |i|
+        @event_queue << Event.new('reset_r', i*reset_time)
+      end
+    end
+
     print_event_qnt =  (@simulation_time.to_f / interval_time).floor
     (1..print_event_qnt).each do |i|
       @event_queue << Event.new('print_status', i*interval_time)
-    end
+    end    
+
     @event_queue.sort_by!.with_index { |e, id| [e.time, id] }
   end
 
@@ -53,7 +65,7 @@ class ProcessManager
      event = @event_queue.shift
       next_time = event.time - (Time.now - @begin_time)
       sleep(next_time) if next_time > 0.0
-      puts "#{event.time}s --> #{event.type}" if @verbose
+      puts event.to_s if @verbose
       MemoryManager.instance.send(event.type, event)
     end
   end

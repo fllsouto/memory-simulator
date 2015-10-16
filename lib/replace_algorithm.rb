@@ -1,17 +1,110 @@
 module Replace
-  class NotRecentlyUsed
+  class ReplaceBase
+
+    attr_accessor :page_table, :frame_table
+
+    def initialize page_table, physical_mem_size
+      @page_table = page_table
+      @frames_qnt = physical_mem_size / 16
+      @frame_table = Array.new(@frames_qnt, -1)
+      frame_bit_qnt = (Math.log2(@frames_qnt)).ceil
+      @f_bit_mask = (1 << frame_bit_qnt) - 1
+      @p_bit_mask = 1 << frame_bit_qnt
+      @r_bit_mask = 1 << (frame_bit_qnt + 1)
+    end
+
+    def free_frame_table frame
+      @frame_table[frame] = -1
+    end
 
   end
 
-  class FirstInFirstOut
+  class NotRecentlyUsed < ReplaceBase
+    def initialize page_table, physical_mem_size
+      super(page_table, physical_mem_size)
+    end
+
+    def choose_frame new_page
+      zero_class = []
+      one_class = []
+      (0...@frames_qnt).each do |f|
+        
+        if @frame_table[f] == -1
+          @frame_table[f] = new_page
+          return [f, -1] 
+        end
+
+        r_bit = @page_table[@frame_table[f]] & @r_bit_mask
+        
+        if r_bit.zero?
+          zero_class.push(f)
+        else
+          one_class.push(f)
+        end
+      end
+      
+      if !zero_class.empty?
+        frame_n = zero_class[Random.rand(zero_class.size)]
+      else
+        frame_n = one_class[Random.rand(one_class.size)]
+      end
+      old_page = @frame_table[frame_n]
+      @frame_table[frame_n] = new_page
+      [frame_n, old_page]
+    end
+
+    def self.get_inverval_time
+      return 4   
+    end
+
+    def reset_r
+      @frame_table.each do |page_n|
+      @page_table[page_n] &= ~@r_bit_mask
+      end
+    end
+  end
+
+  class FirstInFirstOut < ReplaceBase
+    def initialize page_table, physical_mem_size
+      super(page_table, physical_mem_size)
+      @frame_queue = LinkedList.new(Node)
+      @free_frames = @frames_qnt
+    end
+
+    def choose_frame new_page
+      if @free_frames > 0
+        (0...@frames_qnt).each do |f|
+          if @frame_table[f] == -1
+            @frame_table[f] = new_page
+            @frame_queue.enqueue(f)
+            @free_frames -= 1
+            return [f, -1] 
+          end
+        end
+      end
+      frame = @frame_queue.pop.value
+      @frame_queue.enqueue(frame)
+      old_page = @frame_table[frame]
+      @frame_table[frame] = new_page
+      return [frame, old_page]
+    end
+
+    def free_frame_table frame
+      @frame_queue.delete_node(frame)
+      @free_frames += 1
+      super(frame)
+    end
+
+    def self.get_inverval_time
+      return 0 
+    end
+  end
+
+  class SecondChance < ReplaceBase
 
   end
 
-  class SecondChance
-
-  end
-
-  class LeastRecentlyUsed
+  class LeastRecentlyUsed < ReplaceBase
 
   end
 

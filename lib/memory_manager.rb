@@ -40,7 +40,7 @@ class MemoryManager
 
   def start_simulation
     @space = @space_algorithm.new(@virtual_mem_size)
-    @replace = @replace_algorithm.new
+    @replace = @replace_algorithm.new(@page_table, @physical_mem_size)
   end
 
   def set_mem_sizes physical, virtual
@@ -51,10 +51,11 @@ class MemoryManager
     @page_table = Array.new(virtual_pages_qnt, 0) # [unused_bits][M][R][P][page_frame_number]
 
     physical_pages_qnt = physical / PAGE_SIZE
-    @frame_number_size = (Math.log2(physical_pages_qnt)).ceil
+    frame_bit_qnt = (Math.log2(physical_pages_qnt)).ceil
 
-    @p_bit_mask = 1 << @frame_number_size
-    @r_bit_mask = 1 << @frame_number_size + 1
+    @f_bit_mask = (1 << frame_bit_qnt) - 1
+    @p_bit_mask = 1 << frame_bit_qnt
+    @r_bit_mask = 1 << (frame_bit_qnt + 1)
 
     puts "Initializing physical memory with #{physical} bytes"
     IO.write(PHYSICAL_MEM, ([-1]*physical).pack('c*'))
@@ -74,42 +75,76 @@ class MemoryManager
 
   def memory_access event
     local_addr = event.address
-    virtual_addr = @process_table[pid][:base] + local_addr
+    virtual_addr = @process_table[event.process.pid][:base] + local_addr
 
-    page_n = virtual_addr >> Math.log2(PAGE_SIZE)
-    entry = @page_table[page_n]
+    new_page_n = virtual_addr >> Math.log2(PAGE_SIZE)
+    entry = @page_table[new_page_n]
     present = entry & @p_bit_mask
-    if present == 1
-      @page_table[page_n] = entry | @r_bit_mask
+    if present != 0
+      @page_table[new_page_n] = entry | @r_bit_mask
     else
-      page_content = IO.read(VIRTUAL_MEM, PAGE_SIZE, page_n * PAGE_SIZE)
-      frame_n = @replace.choose_frame
-      IO.write(PHYSICAL_MEM, page_content, frame_n * PAGE_SIZE)
-      @page_table[page_n] = frame_n | @p_bit_mask
+      page_content = IO.read(VIRTUAL_MEM, PAGE_SIZE, new_page_n * PAGE_SIZE) #0 pegando conteudo para preencher o quadro
+      frame_n , old_page_n = @replace.choose_frame new_page_n #1 escolhendo o quadro
+      IO.write(PHYSICAL_MEM, page_content, frame_n * PAGE_SIZE) # 3 copiando conteudo para o quadro (frame_n é o offset)
+      @page_table[new_page_n] = frame_n | @p_bit_mask # 4.1 atualizando a nova
+      @page_table[old_page_n] &= ~@p_bit_mask if old_page_n != -1 # 4.2 atualizando a antiga
     end
   end
 
+  def reset_r event
+    @replace.reset_r
+  end
+
   def finish_process event
+    empty_page_bytes = ([-1]*PAGE_SIZE).pack('c*')
+
     proc = event.process
-    @space.free_process proc
     base = @process_table[proc.pid][:base]
-    empty_byte_string = ([-1]*proc.units*PAGE_SIZE).pack('c*')
-    IO.write(VIRTUAL_MEM, empty_byte_string, base)
+    # FREE SPACE STRUCTURE
+    @space.free_process proc
+
+    # FREE PAGING STRUCTURES
+    (0...proc.units).each do |i|
+      i += base / PAGE_SIZE
+      entry = @page_table[i]
+      @page_table[i] = 0
+      if (entry & @p_bit_mask) != 0
+        frame_n = entry & @f_bit_mask
+        @replace.free_frame_table frame_n
+        IO.write(PHYSICAL_MEM, empty_page_bytes, frame_n * PAGE_SIZE)
+      end
+    end
+    # FREE MEM FYLE
+    IO.write(VIRTUAL_MEM, empty_page_bytes * proc.units, base)
+    # FREE PROCESS TABLE
     @process_table[proc.pid] = nil
   end
 
   def print_status event
     puts '--------------------------'
-    puts "LINKED LIST"
+    puts "SPACE LINKED LIST"
     puts @space.mem_list.to_s
-    puts 'VIRTUAL MEMORY'
-    virtual_mem = IO.read(VIRTUAL_MEM).unpack('c*')
-    pages = virtual_mem.size / PAGE_SIZE
+    puts "PAGE TABLE"
+    @page_table.each do |entry|
+      printf "[f:%2d p:%2d r:%2d]\n", entry&@f_bit_mask, entry&@p_bit_mask, entry&@r_bit_mask
+    end
+    puts "FRAME TABLE"
+    puts @replace.frame_table.to_s
+    # print_memory VIRTUAL_MEM if @verbose
+    # print_memory PHYSICAL_MEM if @verbose
+    puts ""
+    puts ""
+  end
+
+  def print_memory memory_file
+    puts 'MEMORY'
+    memory = IO.read(memory_file).unpack('c*')
+    pages = memory.size / PAGE_SIZE
     (0...pages).each do |i|
       print '['
-      printf '%2d', virtual_mem[i*PAGE_SIZE]
+      printf '%2d', memory[i*PAGE_SIZE]
       (1...16).each do |j|
-        printf ', %2d', virtual_mem[i*PAGE_SIZE + j]
+        printf ', %2d', memory[i*PAGE_SIZE + j]
       end
       puts ']'
     end

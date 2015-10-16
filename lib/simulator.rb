@@ -103,9 +103,10 @@ class Simulator
   end
 
   def quick args
+    verbose 1
     load ['trace2.txt']
-    space ['1']
-    replace ['1']
+    space [args[0]]
+    replace [args[1]]
     execute ['1']
   end
 
