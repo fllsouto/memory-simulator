@@ -1,5 +1,19 @@
 # encoding: utf-8
 
+#   **************************************************************************************************
+#
+#   Fellipe Souto Sampaio           - 7990422
+#   Pedro Alves de Medeiros Scocco  - 755883
+# 
+#   Computer Science Undergraduate - University of São Paulo (IME/USP)
+#   Operational Systems - Program Exercise II - README
+#   Prof: Daniel M. Batista
+#
+#   October, 2015
+#
+#   **************************************************************************************************
+
+
 require 'readline'
 
 require_relative 'space_algorithm'
@@ -99,14 +113,6 @@ class Simulator
   def exit args
     puts "Saindo"
     @exit_flag = true
-  end
-
-  def quick args
-    verbose 0
-    load ['trace4.txt']
-    space [args[0]]
-    replace [args[1]]
-    execute ['1']
   end
 
   def verbose args

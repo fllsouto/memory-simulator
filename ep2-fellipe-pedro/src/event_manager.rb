@@ -92,5 +92,6 @@ class EventManager
 
     @event_queue.sort_by!.with_index { |e, id| [e.time, id] }
     @simulation_time = @event_queue.last.time
+    @event_queue << Event.new('end_simulation', @simulation_time + 1)
   end
 end

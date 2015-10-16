@@ -76,7 +76,7 @@ class MemoryManager
     present = entry & @p_bit_mask
     if present != 0
       @page_table[new_page_n] = entry | @r_bit_mask
-      @replace.access_frame entry & @f_bit_mask 
+      @replace.access_frame entry & @f_bit_mask
     else
       page_content = IO.read(VIRTUAL_MEM, PAGE_SIZE, new_page_n * PAGE_SIZE)
       frame_n , old_page_n = @replace.choose_frame new_page_n
@@ -156,6 +156,10 @@ class MemoryManager
       end
       puts ']'
     end
+  end
+
+  def end_simulation event
+    puts "\t\t::END SIMULATION::"
   end
 
   def can_execute?

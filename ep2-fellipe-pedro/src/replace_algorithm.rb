@@ -52,7 +52,7 @@ module Replace
           one_class.push(f)
         end
       end
-      
+
       if !zero_class.empty?
         frame_n = zero_class[Random.rand(zero_class.size)]
       else
@@ -64,7 +64,7 @@ module Replace
     end
 
     def self.get_inverval_time
-      return 4 
+      return 4
     end
 
     def reset_r

@@ -90,7 +90,7 @@ module Space
   end
 
   class QuickFit < SpaceBase
-    MAX = 1600
+    MAX = 16000
 
     attr_accessor :free_vector
 
